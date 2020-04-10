@@ -11,15 +11,20 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements Camera.PictureCallback, SurfaceHolder.Callback {
 
     private final String IMAGE_CAPTURED = "image_captured";
     private final String INSTRUCTION_SEEN = "instruction_seen";
+    private final int CAPTURE_INTERVAL_PERIOD = 2000;
+    private final int MAX_CAPTURE_COUNT = 15;
 
     private SurfaceView mCameraPreview;
     private Camera mCamera;
     private byte[] mCameraCaptureData;
+    private Timer mTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         mCameraPreview  = findViewById(R.id.camera_preview);
         final SurfaceHolder surfaceHolder = mCameraPreview.getHolder();
         surfaceHolder.addCallback(this);
+
+        setupTimer();
     }
 
     @Override
@@ -60,6 +67,10 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
                         .show();
             }
         }
+
+        if (mTimer == null) {
+            setupTimer();
+        }
     }
 
     @Override
@@ -69,6 +80,11 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         if (mCamera != null) {
             mCamera.release();
             mCamera = null;
+        }
+
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
         }
     }
 
@@ -102,5 +118,18 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
 
     private void captureImage() {
         mCamera.takePicture(null, null, this);
+    }
+
+    private void setupTimer() {
+        mTimer = new Timer();
+        // set to loop every x seconds and capture images
+        for(int i = 1; i <= MAX_CAPTURE_COUNT; i++) {
+            mTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    captureImage();
+                }
+            }, 0, CAPTURE_INTERVAL_PERIOD * i);
+        }
     }
 }
