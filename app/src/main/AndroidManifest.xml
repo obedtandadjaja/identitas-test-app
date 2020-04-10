@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.identitas_test_app">
 
+    <!-- Allows access to the camera -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Allows access to the flashlight -->
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
 
     <application
         android:allowBackup="true"

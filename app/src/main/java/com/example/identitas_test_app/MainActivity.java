@@ -1,8 +1,11 @@
 package com.example.identitas_test_app;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
     private Camera mCamera;
     private byte[] mCameraCaptureData;
     private Timer mTimer;
+    private CameraManager mCameraManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,12 +64,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         super.onResume();
 
         if (mCamera == null) {
-            try {
-                mCamera = Camera.open();
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Unable to open camera.", Toast.LENGTH_LONG)
-                        .show();
-            }
+            setupCamera();
         }
 
         if (mTimer == null) {
@@ -118,6 +117,27 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
 
     private void captureImage() {
         mCamera.takePicture(null, null, this);
+    }
+
+    private void setupCamera() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mCameraManager = (CameraManager) MainActivity.this.getSystemService(Context.CAMERA_SERVICE);
+                String cameraId = null;
+                if (mCameraManager != null) {
+                    cameraId = mCameraManager.getCameraIdList()[0];
+                    mCameraManager.setTorchMode(cameraId, true);
+                }
+            } else {
+                mCamera = Camera.open();
+                Camera.Parameters params = mCamera.getParameters();
+                params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                mCamera.setParameters(params);
+            }
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Unable to open camera.", Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 
     private void setupTimer() {
