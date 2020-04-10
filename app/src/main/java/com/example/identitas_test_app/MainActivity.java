@@ -4,16 +4,20 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.widget.ImageView;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements Camera.PictureCallback {
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity implements Camera.PictureCallback, SurfaceHolder.Callback {
 
     private final String IMAGE_CAPTURED = "image_captured";
+    private final String INSTRUCTION_SEEN = "instruction_seen";
 
-    private ImageView mCameraImage;
+    private SurfaceView mCameraPreview;
     private Camera mCamera;
     private byte[] mCameraCaptureData;
 
@@ -22,7 +26,9 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mCameraImage = findViewById(R.id.camera_image_view);
+        mCameraPreview  = findViewById(R.id.camera_preview);
+        final SurfaceHolder surfaceHolder = mCameraPreview.getHolder();
+        surfaceHolder.addCallback(this);
     }
 
     @Override
@@ -64,6 +70,26 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
             mCamera.release();
             mCamera = null;
         }
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        if (mCamera != null) {
+            try {
+                mCamera.setPreviewDisplay(holder);
+                mCamera.startPreview();
+            } catch (IOException e) {
+                Toast.makeText(MainActivity.this, "Unable to start camera preview.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
     }
 
     @Override
