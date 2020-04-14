@@ -15,6 +15,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -93,15 +96,7 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
     protected void onPause() {
         super.onPause();
 
-        if (mCamera != null) {
-            mCamera.release();
-            mCamera = null;
-        }
-
-        if (mTimer != null) {
-            mTimer.cancel();
-            mTimer = null;
-        }
+        teardown();
     }
 
     @Override
@@ -131,6 +126,25 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         Bitmap bitmap = BitmapFactory.decodeByteArray(mCameraCaptureData, 0, mCameraCaptureData.length);
 
         // send the image data to the server here
+        // expected output JSON schema:
+        // { result: { name:, age:, etc.},
+        //   error: { message: ..., details: ... } }
+        String output = "";
+        try {
+            JSONObject outputJSON = new JSONObject(output);
+            JSONObject error = outputJSON.getJSONObject("error");
+            if (error != null) {
+                Toast.makeText(MainActivity.this, error.getString("message"), Toast.LENGTH_LONG);
+            } else {
+                JSONObject result = outputJSON.getJSONObject("result");
+                // parse results here
+
+                teardown();
+                // send back results here...
+            }
+        } catch (JSONException e) {
+            Toast.makeText(MainActivity.this, "Unexpected error. Please contact support", Toast.LENGTH_SHORT);
+        }
     }
 
     private void captureImage() {
@@ -168,6 +182,18 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
                     captureImage();
                 }
             }, 0, CAPTURE_INTERVAL_PERIOD * i);
+        }
+    }
+
+    private void teardown() {
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
+        }
+
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
         }
     }
 }
