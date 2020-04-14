@@ -112,7 +112,8 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
         mCameraCaptureData = data;
 
         Bitmap bitmap = BitmapFactory.decodeByteArray(mCameraCaptureData, 0, mCameraCaptureData.length);
-        // process image bitmap here
+
+        // send the image data to the server here
     }
 
     private void captureImage() {
