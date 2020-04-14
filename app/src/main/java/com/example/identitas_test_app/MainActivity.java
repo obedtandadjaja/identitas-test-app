@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,17 +25,32 @@ public class MainActivity extends AppCompatActivity implements Camera.PictureCal
     private final String INSTRUCTION_SEEN = "instruction_seen";
     private final int CAPTURE_INTERVAL_PERIOD = 2000;
     private final int MAX_CAPTURE_COUNT = 15;
+    private final int DEFAULT_OVERLAY_MARGIN = 40;
+    private final double CARD_HEIGHT_WIDTH_RATIO = 1.5;
 
     private SurfaceView mCameraPreview;
     private Camera mCamera;
     private byte[] mCameraCaptureData;
     private Timer mTimer;
     private CameraManager mCameraManager;
+    private RelativeLayout mParentLayout;
+    private ImageView mOverlayTop, mOverlayBottom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mParentLayout = findViewById(R.id.parent);
+        mOverlayTop = findViewById(R.id.box_overlay_top);
+        mOverlayBottom = findViewById(R.id.box_overlay_bottom);
+
+        // set the overlay top and bottom according to the card size
+        int parentWidth = mParentLayout.getWidth() - DEFAULT_OVERLAY_MARGIN * 2;
+        int overlayTopBottomHeight =
+                mParentLayout.getHeight() - (int) (parentWidth * CARD_HEIGHT_WIDTH_RATIO);
+        mOverlayTop.setMinimumHeight(overlayTopBottomHeight);
+        mOverlayBottom.setMinimumHeight(overlayTopBottomHeight);
 
         mCameraPreview  = findViewById(R.id.camera_preview);
         final SurfaceHolder surfaceHolder = mCameraPreview.getHolder();
